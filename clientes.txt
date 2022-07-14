@@ -1,1 +1,2 @@
-Cliente {nomeCliente = "anderson", cpf = "123", senha = "123", telefone = "123", saldo = "100"}
+Cliente {nomeCliente = "and", cpf = "6", senha = "6", telefone = "6", saldo = "100"}
+Cliente {nomeCliente = "rel", cpf = "1", senha = "1", telefone = "1", saldo = "150.0"}
