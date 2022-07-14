@@ -1,0 +1,1 @@
+Cliente {nomeCliente = "anderson", cpf = "123", senha = "123", telefone = "123", saldo = "100"}

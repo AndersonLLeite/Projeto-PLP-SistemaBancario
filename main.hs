@@ -75,7 +75,7 @@ menuGerente = do
   putStrLn "\nSelecione uma das opções abaixo:\n"
   putStrLn "1 - Ver usuários cadastrados no sistema"
   putStrLn "2 - Remover usuários"
-  putStrLn "3 - Atualizar contato Adm"
+  putStrLn "3 - Atualizar contato Gerente"
   putStrLn "4 - Editar dados de um Cliente"
   putStrLn "0 - Voltar"
   printLine
@@ -243,7 +243,7 @@ acessoGerente = do
     else do
       printLine
       putStrLn "Senha inválida!"
-      putStr "Deseja tentar fazer login como gerenete novamente! (s/n): "
+      putStr "Deseja tentar fazer login como gerente novamente! (s/n): "
       opcao <- getChar
 
       if toLower opcao == 's'
@@ -277,45 +277,6 @@ mudaContato = do
 
   putStrLn "\nContato atualizado com sucesso!"
   menuGerente
-
-
--- editarAnimal :: IO ()
--- editarAnimal = do
---   putStr "Nome do animal que vai ser editado: "
---   nomeAnimal <- getLine
---   putStr "Email do cliente dono do animal: "
---   emailDoDono <- getLine
-
---   verificaSeAnimalEClienteExistem nomeAnimal emailDoDono
-
---   putStr "Novo peso do animal: "
---   novoPeso <- getLine
---   putStr "Nova altura do animal: "
---   novaAltura <- getLine
---   putStr "Nova idade do animal: "
---   novaIdade <- getLine
-
---   animaisContents <- readFile "animais.txt"
---   let animais = lines animaisContents
-
---   let dadosAntigosDoAnimal = encontraERetornaAnimal [read x :: Animal | x <- animais] nomeAnimal emailDoDono
-
---   removeFile "animais.txt"
---   let novaListaDeAnimais = [read x :: Animal | x <- animais, not (encontrarAnimalASerRemovido (read x :: Animal) nomeAnimal emailDoDono)]
-
---   let animalEditado =
---         Animal
---           { nomeAnimal = obterAnimal dadosAntigosDoAnimal "nomeAnimal",
---             emailCliente = obterAnimal dadosAntigosDoAnimal "emailCliente",
---             peso = novoPeso,
---             altura = novaAltura,
---             especie = obterAnimal dadosAntigosDoAnimal "especie",
---             idade = novaIdade
---           }
---   atualizaAnimais (novaListaDeAnimais ++ [animalEditado])
-
---   menuAdm
-
 ------------------------------------
 
 --------- Metodos Clientes ---------
