@@ -132,7 +132,7 @@ segundaTelaCliente :: String -> String -> IO ()
 segundaTelaCliente x cpf
   -- | x == "1" = consultarDados cpf
   -- | x == "2" = realizarSaque cpf
-  -- | x == "3" = realizarDeposito cpf
+  | x == "3" = depositar cpf
   -- | x == "4" = realizarEmprestimo cpf
   -- | x == "5" = realizarInvestimento cpf
   | x == "0" = menuCliente
@@ -214,8 +214,29 @@ removerCliente = do
 
   menuGerente
 
+removerClienteDadoCpf :: String -> IO ()
+removerClienteDadoCpf cpf = do
+  arquivoExiste <- doesFileExist "clientes.txt"
+
+  if arquivoExiste then do
+    file <- openFile "clientes.txt" ReadMode
+    contents <- hGetContents file
+    let clientes = lines contents
+    let hasCliente = encontraCliente [read x :: Cliente | x <- clientes] cpf ""
+
+    if not hasCliente
+      then do
+        putStrLn ("\nCliente com cpf: '" ++ cpf ++ "' não existe!")
+      else do
+        removeFile "clientes.txt"
+        let novaListaDeClientes = [read x :: Cliente | x <- clientes, obterCpf (read x :: Cliente) /= cpf]
+        atualizaClientes novaListaDeClientes
+        putStrLn "Cliente removido com sucesso!"
+  else do
+    putStrLn "Não há clientes cadastrados!"
+
 atualizaClientes :: [Cliente] -> IO ()
-atualizaClientes [] = putStrLn "Cliente removido com sucesso!\n"
+atualizaClientes [] = putStrLn "Cliente atualizado com sucesso!\n"
 atualizaClientes (x : xs) = do
   clientesCadastrados <- doesFileExist "clientes.txt"
   if not clientesCadastrados
@@ -226,6 +247,7 @@ atualizaClientes (x : xs) = do
       hClose file
     else appendFile "clientes.txt" ("\n" ++ show x)
   atualizaClientes xs
+
 
 acessoGerente :: IO ()
 acessoGerente = do
@@ -369,9 +391,48 @@ verContatoDoGerente= do
 
   menuCliente
 
+depositar :: String -> IO ()
+depositar cpf = do
+  putStr "valor a depositar: "
+  valor <- getLine
+
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
+
+  let dadosAntigosDoCliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  let saldoAntigo = obterSaldo dadosAntigosDoCliente
+  let novoSaldo = (read valor :: Double) + (read saldoAntigo :: Double)
+  removeFile "clientes.txt"
+
+  let novaListaDeClientes = [read x :: Cliente | x <- clientes, not (encontrarClienteASerRemovido (read x :: Cliente) cpf)]
+
+  let clienteEditado = Cliente{ nomeCliente = obterNomes dadosAntigosDoCliente,
+            cpf = obterCpf dadosAntigosDoCliente,
+            senha = obterSenha dadosAntigosDoCliente,
+            telefone = obterTelefone dadosAntigosDoCliente,
+            saldo = show novoSaldo
+          }
+  atualizaClientes (novaListaDeClientes ++ [clienteEditado])
+
+  segundoMenuCliente cpf
+
 ------------------------------------
 
 -------- Metodos auxiliares --------
+
+acharCliente :: [Cliente] -> String -> Cliente
+-- Procura Cliente somente verificando o cpf
+acharCliente (c : cs) cpf 
+  | obterCpf c == cpf = c
+  | obterCpf c /= cpf = encontrar
+  where
+    encontrar = acharCliente cs cpf 
+
+encontrarClienteASerRemovido :: Cliente -> String -> Bool
+encontrarClienteASerRemovido cliente cpf = do
+  obterCpf cliente == cpf 
+
+  
 
 obterCliente :: Cliente -> String -> String
 obterCliente Cliente {nomeCliente = n, cpf = e, senha = s, telefone = t, saldo = sa} prop
@@ -380,9 +441,6 @@ obterCliente Cliente {nomeCliente = n, cpf = e, senha = s, telefone = t, saldo =
   | prop == "senha" = s
   | prop == "telefone" = t
   | prop == "saldo" = sa
-
--- editCliente :: Cliente -> Animal -> Cliente
--- editCliente Cliente {nomeCliente = n, email = e, senha = s, telefone = t} a = Cliente {nomeCliente = n, email = e, senha = s, telefone = t}
 
 
 obterGerente :: Gerente -> String -> String
