@@ -130,7 +130,7 @@ segundoMenuCliente cpf = do
 
 segundaTelaCliente :: String -> String -> IO ()
 segundaTelaCliente x cpf
-  -- | x == "1" = consultarDados cpf
+  | x == "1" = consultarDados cpf
   -- | x == "2" = realizarSaque cpf
   | x == "3" = depositar cpf
   -- | x == "4" = realizarEmprestimo cpf
@@ -390,6 +390,16 @@ verContatoDoGerente= do
   putStrLn (obterGerente gerente "telefone")
 
   menuCliente
+
+consultarDados :: String -> IO ()
+consultarDados cpf = do
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
+  let cliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  printLine
+  putStrLn (show "nome: " ++ obterNomes cliente ++ " - cpf: " ++ obterCpf cliente ++ " - telefone: " ++ obterTelefone cliente ++ " - saldo: R$ " ++ obterSaldo cliente)
+
+  segundoMenuCliente cpf
 
 depositar :: String -> IO ()
 depositar cpf = do
