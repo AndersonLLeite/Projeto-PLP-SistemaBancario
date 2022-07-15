@@ -38,6 +38,17 @@ data Cliente = Cliente
   }
   deriving (Read, Show)
 
+data Emprestimo = Emprestimo
+  { nomeEmprestimo :: String,
+    cpfEmprestimo :: String,
+    totalParcelas :: String,
+    dataDePagamento :: String,
+    valorParcela :: String,
+    juros :: String,
+    valorTotal :: String,
+    status :: String
+  }
+  deriving (Read, Show)
 
 printLine :: IO ()
 printLine = putStrLn "\n------------------------------------------"
@@ -76,7 +87,7 @@ menuGerente = do
   putStrLn "1 - Ver usuários cadastrados no sistema"
   putStrLn "2 - Remover usuários"
   putStrLn "3 - Atualizar contato Gerente"
-  putStrLn "4 - Editar dados de um Cliente"
+  putStrLn "4 - ver empréstimos"
   putStrLn "0 - Voltar"
   printLine
   putStr "Opção: "
@@ -88,7 +99,7 @@ opcaoGerente x
   | x == "1" = verClientesCadastrados
   | x == "2" = removerCliente
   | x == "3" = atualizarContatoGerente
-  -- | x == "4" = editarCliente
+  | x == "4" = verEmprestimosCadastrados
   | x == "0" = showMenu
   | otherwise = invalidOption menuGerente
 
@@ -131,9 +142,9 @@ segundoMenuCliente cpf = do
 segundaTelaCliente :: String -> String -> IO ()
 segundaTelaCliente x cpf
   | x == "1" = consultarDados cpf
-  -- | x == "2" = realizarSaque cpf
+  | x == "2" = sacar cpf
   | x == "3" = depositar cpf
-  -- | x == "4" = realizarEmprestimo cpf
+  | x == "4" = realizarEmprestimo cpf
   -- | x == "5" = realizarInvestimento cpf
   | x == "0" = menuCliente
   | otherwise = invalidOption (segundoMenuCliente cpf)
@@ -213,27 +224,6 @@ removerCliente = do
           putStrLn "Cliente removido com sucesso!"
 
   menuGerente
-
-removerClienteDadoCpf :: String -> IO ()
-removerClienteDadoCpf cpf = do
-  arquivoExiste <- doesFileExist "clientes.txt"
-
-  if arquivoExiste then do
-    file <- openFile "clientes.txt" ReadMode
-    contents <- hGetContents file
-    let clientes = lines contents
-    let hasCliente = encontraCliente [read x :: Cliente | x <- clientes] cpf ""
-
-    if not hasCliente
-      then do
-        putStrLn ("\nCliente com cpf: '" ++ cpf ++ "' não existe!")
-      else do
-        removeFile "clientes.txt"
-        let novaListaDeClientes = [read x :: Cliente | x <- clientes, obterCpf (read x :: Cliente) /= cpf]
-        atualizaClientes novaListaDeClientes
-        putStrLn "Cliente removido com sucesso!"
-  else do
-    putStrLn "Não há clientes cadastrados!"
 
 atualizaClientes :: [Cliente] -> IO ()
 atualizaClientes [] = putStrLn "Cliente atualizado com sucesso!\n"
@@ -401,6 +391,34 @@ consultarDados cpf = do
 
   segundoMenuCliente cpf
 
+sacar :: String -> IO ()
+sacar cpf = do
+  putStr "valor a sacar: "
+  valor <- getLine
+
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
+
+  let dadosAntigosDoCliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  let saldoAntigo = obterSaldo dadosAntigosDoCliente
+  let novoSaldo = (read saldoAntigo :: Double) - (read valor :: Double) 
+  if novoSaldo > 0
+    then do
+      removeFile "clientes.txt"
+      let novaListaDeClientes = [read x :: Cliente | x <- clientes, not (encontrarClienteASerRemovido (read x :: Cliente) cpf)]
+      let clienteEditado = Cliente{ nomeCliente = obterNomes dadosAntigosDoCliente,
+            cpf = obterCpf dadosAntigosDoCliente,
+            senha = obterSenha dadosAntigosDoCliente,
+            telefone = obterTelefone dadosAntigosDoCliente,
+            saldo = show novoSaldo
+          }
+      atualizaClientes (novaListaDeClientes ++ [clienteEditado])
+      putStrLn "Saque realizado com sucesso"
+      segundoMenuCliente cpf
+  else do
+    putStrLn "Saldo insuficiente"
+    segundoMenuCliente cpf
+
 depositar :: String -> IO ()
 depositar cpf = do
   putStr "valor a depositar: "
@@ -423,10 +441,112 @@ depositar cpf = do
             saldo = show novoSaldo
           }
   atualizaClientes (novaListaDeClientes ++ [clienteEditado])
+  putStrLn "Depósito realizado com sucesso"
 
   segundoMenuCliente cpf
 
-------------------------------------
+depositarEmprestimo :: String -> String -> IO ()
+depositarEmprestimo cpf valor = do
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
+
+  let dadosAntigosDoCliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  let saldoAntigo = obterSaldo dadosAntigosDoCliente
+  let novoSaldo = (read valor :: Double) + (read saldoAntigo :: Double)
+  removeFile "clientes.txt"
+
+  let novaListaDeClientes = [read x :: Cliente | x <- clientes, not (encontrarClienteASerRemovido (read x :: Cliente) cpf)]
+
+  let clienteEditado = Cliente{ nomeCliente = obterNomes dadosAntigosDoCliente,
+            cpf = obterCpf dadosAntigosDoCliente,
+            senha = obterSenha dadosAntigosDoCliente,
+            telefone = obterTelefone dadosAntigosDoCliente,
+            saldo = show novoSaldo
+          }
+  atualizaClientes (novaListaDeClientes ++ [clienteEditado])
+  putStrLn "Depósito do emprestimo realizado com sucesso"
+
+realizarEmprestimo :: String -> IO ()
+realizarEmprestimo cpf = do
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
+
+  let dadosDoCliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  let cpf = obterCpf dadosDoCliente
+  let nome = obterNomes dadosDoCliente
+
+  putStr "valor a pegar emprestado: "
+  valor <- getLine
+  putStr "numero de parcelas: "
+  numeroDeParcelas <- getLine
+  let juros = "0.1"
+  let dataDeHojeFormatada = "15/07/2022" -- só parar ter uma base
+  let dataVencimentoFormatada = "15/07/2023" -- só parar ter uma base
+  let valorTotal = show ((read valor :: Double) + (read valor :: Double) * (read juros :: Double))
+  let valorParcela = show ((read valorTotal :: Double) / (read numeroDeParcelas :: Double))
+  let totalParcelas = numeroDeParcelas
+  putStrLn ("data de pagamento: primeiro útil do mês ")
+  putStrLn ("valor da parcela: " ++ show valorParcela)
+  putStrLn ("juros: " ++ show juros ++ "\n")
+  putStrLn ("valor total a pagar: " ++ show valorTotal)
+  printLine
+  let emprestimo = Emprestimo{
+    nomeEmprestimo = nome,
+    cpfEmprestimo = cpf,
+    totalParcelas = totalParcelas,
+    dataDePagamento = "1 dia util do mês", 
+    valorParcela = show valorParcela, 
+    juros = show juros, 
+    valorTotal = show valorTotal,
+    status = "em andamento"
+    }
+  depositarEmprestimo cpf valorTotal
+  emprestimosCadastrados <- doesFileExist "emprestimos.txt"
+
+  if emprestimosCadastrados
+    then do
+      file <- appendFile "emprestimos.txt" ("\n" ++ show emprestimo)
+      putStrLn "Emprestimo realizado com sucesso!"
+      segundoMenuCliente cpf
+    else do
+      file <- appendFile "emprestimos.txt" (show emprestimo)    
+      segundoMenuCliente cpf
+  
+
+
+imprimeEmprestimosCadastrados :: [Emprestimo] -> Int -> IO ()
+imprimeEmprestimosCadastrados [] 0 = putStrLn "\nNenhum Emprestimo cadastrado"
+imprimeEmprestimosCadastrados [] _ = putStrLn "\nEmprestimos listados com sucesso"
+imprimeEmprestimosCadastrados (x : xs) n = do
+  putStrLn ("\nEmprestimo " ++ show n ++ ":" ++ "\n" )
+  putStrLn ("Nome: " ++ (nomeEmprestimo x) ++ "\n")
+  putStrLn ("CPF: " ++ (cpfEmprestimo x) ++ "\n")
+  putStrLn ("Total de parcelas: " ++ (show (totalParcelas x)) ++ "\n")
+  putStrLn ("Data de pagamento: " ++ (dataDePagamento x) ++ "\n")
+  putStrLn ("Valor da parcela: " ++ (valorParcela x) ++ "\n")
+  putStrLn ("Juros: " ++ (juros x) ++ "\n")
+  putStrLn ("Valor total: " ++ (valorTotal x) ++ "\n")
+  printLine
+
+  imprimeEmprestimosCadastrados xs (n + 1)
+
+verEmprestimosCadastrados :: IO ()
+verEmprestimosCadastrados = do
+  arquivoExiste <- doesFileExist "emprestimos.txt"
+
+  if arquivoExiste then do
+    file <- openFile "emprestimos.txt" ReadMode
+    contents <- hGetContents file
+    let emprestimos = lines contents
+
+    printLine
+    imprimeEmprestimosCadastrados [read x :: Emprestimo | x <- emprestimos] 0
+  else do
+    putStrLn "\nNão há emprestimos cadastrados."
+  menuGerente
+    
+  
+
 
 -------- Metodos auxiliares --------
 
@@ -495,6 +615,30 @@ obterTelefone (Cliente _ _ _ telefone _) = telefone
 
 obterSaldo :: Cliente -> String
 obterSaldo (Cliente _ _ _ _ saldo) = saldo
+
+obterNomeEmprestimo :: Emprestimo -> String
+obterNomeEmprestimo (Emprestimo nomeEmprestimo _ _ _ _ _ _ _) = nomeEmprestimo
+
+obterCpfEmprestimo :: Emprestimo -> String
+obterCpfEmprestimo (Emprestimo _ cpfEmprestimo _ _ _ _ _ _) = cpfEmprestimo
+
+obterTotalParcelas :: Emprestimo -> String
+obterTotalParcelas (Emprestimo _ _ totalParcelas _ _ _ _ _) = totalParcelas
+
+obterDataDePagamento :: Emprestimo -> String
+obterDataDePagamento (Emprestimo _ _ _ dataDePagamento _ _ _ _) = dataDePagamento
+
+obterValorParcela :: Emprestimo -> String
+obterValorParcela (Emprestimo _ _ _ _ valorParcela _ _ _) = valorParcela
+
+obterJuros :: Emprestimo -> String
+obterJuros (Emprestimo _ _ _ _ _ juros _ _) = juros
+
+obterValorTotal :: Emprestimo -> String
+obterValorTotal (Emprestimo _ _ _ _ _ _ valorTotal _) = valorTotal
+
+obterStatus :: Emprestimo -> String
+obterStatus (Emprestimo _ _ _ _ _ _ _ status) = status
 
 encontraCliente :: [Cliente] -> String -> String -> Bool
 encontraCliente [] cpf senha = False
