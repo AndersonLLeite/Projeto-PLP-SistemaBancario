@@ -1,0 +1,1 @@
+Cliente {nomeCliente = "1\DEL", cpf = "1", senha = "1", telefone = "1", saldo = "220.0"}

@@ -50,6 +50,16 @@ data Emprestimo = Emprestimo
   }
   deriving (Read, Show)
 
+data Investimento = Investimento {
+    nomeInvestimento :: String,
+    cpfInvestimento :: String,
+    valorInvestimento :: String,
+    rentabilidade :: String,
+    tipoDeInvestimento :: String,
+    valorRetornado :: String,
+    statusInvestimento :: String
+  } deriving (Read, Show)
+
 printLine :: IO ()
 printLine = putStrLn "\n------------------------------------------"
 
@@ -88,6 +98,7 @@ menuGerente = do
   putStrLn "2 - Remover usuários"
   putStrLn "3 - Atualizar contato Gerente"
   putStrLn "4 - ver empréstimos"
+  putStrLn "5 - ver investimentos"
   putStrLn "0 - Voltar"
   printLine
   putStr "Opção: "
@@ -100,6 +111,7 @@ opcaoGerente x
   | x == "2" = removerCliente
   | x == "3" = atualizarContatoGerente
   | x == "4" = verEmprestimosCadastrados
+  | x == "5" = verInvestimentosCadastrados
   | x == "0" = showMenu
   | otherwise = invalidOption menuGerente
 
@@ -145,7 +157,7 @@ segundaTelaCliente x cpf
   | x == "2" = sacar cpf
   | x == "3" = depositar cpf
   | x == "4" = realizarEmprestimo cpf
-  -- | x == "5" = realizarInvestimento cpf
+  | x == "5" = realizarInvestimento cpf
   | x == "0" = menuCliente
   | otherwise = invalidOption (segundoMenuCliente cpf)
 
@@ -512,7 +524,51 @@ realizarEmprestimo cpf = do
       file <- appendFile "emprestimos.txt" (show emprestimo)    
       segundoMenuCliente cpf
   
+realizarInvestimento :: String -> IO ()
+realizarInvestimento cpf = do
+  clientesContents <- readFile "clientes.txt"
+  let clientes = lines clientesContents
 
+  let dadosDoCliente = acharCliente [read x :: Cliente | x <- clientes] cpf
+  let cpf = obterCpf dadosDoCliente
+  let nome = obterNomes dadosDoCliente
+
+  putStr "valor a investir: "
+  valor <- getLine
+  putStrLn "tipo de investimento: "
+  putStrLn "1 - Poupança: -- 2,99% a.a. "
+  putStrLn "2 - CDI: -- 3,95% a.a. "
+  putStrLn "3 - Tesouro D.: -- 4,5% a.a. "
+  putStrLn "4 - LCI: -- 4,39% a.a. "
+  putStrLn "5 - LCA: -- 5,06% a.a. "
+  putStr "escolha uma opção de investimento: "
+  tInvest <- getLine
+  let tInvestimento = tInvest
+  
+
+   
+  let valorRetornado = (read valor :: Double) * (read rentabilidade :: Double)
+
+  let investimento = Investimento{
+    nomeInvestimento = nome,
+    cpfInvestimento = cpf,
+    valorInvestimento = show valor,
+    rentabilidade = rentabilidade,
+    tipoDeInvestimento = tipoInvestimento,
+    valorRetornado = show valorRetornado,
+    statusInvestimento = "em andamento"
+  }
+
+  investimentosCadastrados <- doesFileExist "investimentos.txt"
+
+  if investimentosCadastrados
+    then do
+      file <- appendFile "investimentos.txt" ("\n" ++ show investimento)
+      putStrLn "Investimento realizado com sucesso!"
+      segundoMenuCliente cpf
+    else do
+      file <- appendFile "investimentos.txt" (show investimento)    
+      segundoMenuCliente cpf
 
 imprimeEmprestimosCadastrados :: [Emprestimo] -> Int -> IO ()
 imprimeEmprestimosCadastrados [] 0 = putStrLn "\nNenhum Emprestimo cadastrado"
@@ -545,7 +601,34 @@ verEmprestimosCadastrados = do
     putStrLn "\nNão há emprestimos cadastrados."
   menuGerente
     
-  
+verInvestimentosCadastrados :: IO ()
+verInvestimentosCadastrados = do
+  arquivoExiste <- doesFileExist "investimentos.txt"
+
+  if arquivoExiste then do
+    file <- openFile "investimentos.txt" ReadMode
+    contents <- hGetContents file
+    let investimentos = lines contents
+
+    printLine
+    imprimeInvestimentosCadastrados [read x :: Investimento | x <- investimentos] 0
+  else do
+    putStrLn "\nNão há investimentos cadastrados."
+  menuGerente
+
+imprimeInvestimentosCadastrados :: [Investimento] -> Int -> IO ()
+imprimeInvestimentosCadastrados [] 0 = putStrLn "\nNenhum Investimento cadastrado"
+imprimeInvestimentosCadastrados [] _ = putStrLn "\nInvestimentos listados com sucesso"
+imprimeInvestimentosCadastrados (x : xs) n = do
+  putStrLn ("\nInvestimento " ++ show n ++ ":" ++ "\n" )
+  putStrLn ("Nome: " ++ (nomeInvestimento x) ++ "\n")
+  putStrLn ("CPF: " ++ (cpfInvestimento x) ++ "\n")
+  putStrLn ("Valor a investir: " ++ (valorInvestimento x) ++ "\n")
+  putStrLn ("Rentabilidade % a.a: " ++ (rentabilidade x) ++ "\n")
+  putStrLn ("Tipo de investimento: " ++ (tipoDeInvestimento x) ++ "\n")
+  putStrLn ("Valor retornado: " ++ (valorRetornado x) ++ "\n")
+  printLine
+  imprimeInvestimentosCadastrados xs (n + 1)
 
 
 -------- Metodos auxiliares --------
