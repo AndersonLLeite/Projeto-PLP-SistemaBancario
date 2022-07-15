@@ -415,6 +415,7 @@ sacar cpf = do
       atualizaClientes (novaListaDeClientes ++ [clienteEditado])
       putStrLn "Saque realizado com sucesso"
       segundoMenuCliente cpf
+      
   else do
     putStrLn "Saldo insuficiente"
     segundoMenuCliente cpf
@@ -442,7 +443,6 @@ depositar cpf = do
           }
   atualizaClientes (novaListaDeClientes ++ [clienteEditado])
   putStrLn "Depósito realizado com sucesso"
-
   segundoMenuCliente cpf
 
 depositarEmprestimo :: String -> String -> IO ()
@@ -500,7 +500,7 @@ realizarEmprestimo cpf = do
     valorTotal = show valorTotal,
     status = "em andamento"
     }
-  depositarEmprestimo cpf valorTotal
+  depositarEmprestimo cpf valor
   emprestimosCadastrados <- doesFileExist "emprestimos.txt"
 
   if emprestimosCadastrados
@@ -508,9 +508,11 @@ realizarEmprestimo cpf = do
       file <- appendFile "emprestimos.txt" ("\n" ++ show emprestimo)
       putStrLn "Emprestimo realizado com sucesso!"
       segundoMenuCliente cpf
+
     else do
-      file <- appendFile "emprestimos.txt" (show emprestimo)    
+      file <- appendFile "emprestimos.txt" (show emprestimo) 
       segundoMenuCliente cpf
+      
   
 
 
