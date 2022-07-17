@@ -1,1 +1,1 @@
-Gerente {nomeGerente = "Gerente", senhaGerente = "123456", telefoneGerente = "9090909"}
+Gerente {nomeGerente = "Gerente", senhaGerente = "123456", telefoneGerente = "969699696"}

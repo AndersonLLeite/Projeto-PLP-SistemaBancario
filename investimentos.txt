@@ -1,1 +1,0 @@
-Investimento {nomeInvestimento = "and", cpfInvestimento = "1", valorInvestimento = "100", tipoDeInvestimento = "3", valorRetornado = "104.5", statusInvestimento = "Em andamento..."}

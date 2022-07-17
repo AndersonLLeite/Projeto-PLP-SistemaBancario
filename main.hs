@@ -54,6 +54,7 @@ data Investimento = Investimento {
     cpfInvestimento :: String,
     valorInvestimento :: String,
     tipoDeInvestimento :: String,
+    rentabilidadeInvestimento :: String,
     valorRetornado :: String,
     statusInvestimento :: String
   } deriving (Read, Show)
@@ -208,7 +209,6 @@ verClientesCadastrados = do
     putStrLn "\n# Não há clientes cadastrados!"
   menuGerente
 
-
 removerCliente :: IO ()
 removerCliente = do
   clientesCadastrados <- doesFileExist "clientes.txt"
@@ -239,17 +239,14 @@ atualizaClientes :: [Cliente] -> IO ()
 atualizaClientes [] = putStrLn "# Cliente atualizado com sucesso!\n"
 atualizaClientes (x : xs) = do
   clientesCadastrados <- doesFileExist "clientes.txt"
-  if clientesCadastrados
+  if not clientesCadastrados
     then do
-      file <- appendFile "clientes.txt" ("\n" ++ show x)
-      atualizaClientes xs 
-    else do
-      file <- appendFile "clientes.txt" (show x) 
-      atualizaClientes xs 
-
-  
-     
-
+      file <- openFile "clientes.txt" WriteMode
+      hPutStr file (show x)
+      hFlush file
+      hClose file
+    else appendFile "clientes.txt" ("\n" ++ show x)
+  atualizaClientes xs
 
 acessoGerente :: IO ()
 acessoGerente = do
@@ -276,8 +273,6 @@ acessoGerente = do
         then do
           acessoGerente
         else showMenu
-
-
 
 mudaContato :: IO ()
 mudaContato = do
@@ -481,7 +476,7 @@ depositarEmprestimo cpf valor = do
             saldo = show novoSaldo
           }
   atualizaClientes (novaListaDeClientes ++ [clienteEditado])
-  putStrLn "# Depósito do emprestimo realizado com sucesso!"
+  putStrLn "# Depósito do empréstimo realizado com sucesso!"
 
 sacarInvestimento :: String -> String -> IO ()
 sacarInvestimento cpf valor = do
@@ -521,9 +516,7 @@ realizarEmprestimo cpf = do
   valor <- getLine
   putStr "# Insira o número de parcelas que deseja pagar: "
   numeroDeParcelas <- getLine
-  let juros = "1.4"
-  let dataDeHojeFormatada = "15/07/2022" -- só parar ter uma base
-  let dataVencimentoFormatada = "15/07/2023" -- só parar ter uma base
+  let juros = "0.14"
   let valorTotal = show ((read valor :: Double) + (read valor :: Double) * (read juros :: Double))
   let valorParcela = show ((read valorTotal :: Double) / (read numeroDeParcelas :: Double))
   let totalParcelas = numeroDeParcelas
@@ -578,13 +571,14 @@ realizarInvestimento cpf = do
   let tInvestimento = tInvest
   let op1 = read tInvestimento
   let rentabilidade = verificaDigito(op1)
-  let valorRetornado = (read valor :: Double) + (read valor :: Double) * rentabilidade
+  let valorRetornado = (read valor :: Double) + ((read valor :: Double) * ((read rentabilidade :: Double)/100))
 
   let investimento = Investimento{
     nomeInvestimento = nome,
     cpfInvestimento = cpf,
-    valorInvestimento =  valor,
+    valorInvestimento = valor,
     tipoDeInvestimento = tInvestimento,
+    rentabilidadeInvestimento = show rentabilidade ,
     valorRetornado = show valorRetornado,
     statusInvestimento = "Em andamento..."
   }
@@ -656,6 +650,7 @@ imprimeInvestimentosCadastrados (x : xs) n = do
   putStrLn ("CPF: " ++ (cpfInvestimento x) ++ "\n")
   putStrLn ("Valor a investir: " ++ (valorInvestimento x) ++ "\n")
   putStrLn ("Tipo de investimento: " ++ (tipoDeInvestimento x) ++ "\n")
+  putStrLn ("Rentabilidade: " ++ (rentabilidadeInvestimento x) ++ "%" ++ "\n")
   putStrLn ("Valor retornado: " ++ (show (valorRetornado x)) ++ "\n")
   printLine
   imprimeInvestimentosCadastrados xs (n + 1)
@@ -681,7 +676,6 @@ obterCliente Cliente {nomeCliente = n, cpf = e, senha = s, telefone = t, saldo =
   | prop == "senha" = s
   | prop == "telefone" = t
   | prop == "saldo" = sa
-
 
 obterGerente :: Gerente -> String -> String
 obterGerente Gerente {nomeGerente = n, senhaGerente = s, telefoneGerente = t} prop
@@ -745,13 +739,13 @@ obterValorTotal (Emprestimo _ _ _ _ _ _ valorTotal _) = valorTotal
 obterStatus :: Emprestimo -> String
 obterStatus (Emprestimo _ _ _ _ _ _ _ status) = status
 
-verificaDigito :: Int -> Double
-verificaDigito n | n == 1 = 0.0299
-                 | n == 2 = 0.0395
-                 | n == 3 = 0.045
-                 | n == 4 = 0.0439
-                 | n == 5 = 0.0506
-                 | otherwise = 1
+verificaDigito :: Int -> String
+verificaDigito n | n == 1 = "2.99"
+                 | n == 2 = "3.95"
+                 | n == 3 = "4.45"
+                 | n == 4 = "4.39"
+                 | n == 5 = "5.56"
+                 | otherwise = "1"
 
 encontraCliente :: [Cliente] -> String -> String -> Bool
 encontraCliente [] cpf senha = False
