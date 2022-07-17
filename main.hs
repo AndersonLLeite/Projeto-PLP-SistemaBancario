@@ -239,14 +239,16 @@ atualizaClientes :: [Cliente] -> IO ()
 atualizaClientes [] = putStrLn "# Cliente atualizado com sucesso!\n"
 atualizaClientes (x : xs) = do
   clientesCadastrados <- doesFileExist "clientes.txt"
-  if not clientesCadastrados
+  if clientesCadastrados
     then do
-      file <- openFile "clientes.txt" WriteMode
-      hPutStr file (show x)
-      hFlush file
-      hClose file
-    else appendFile "clientes.txt" ("\n" ++ show x)
-  atualizaClientes xs
+      file <- appendFile "clientes.txt" ("\n" ++ show x)
+      atualizaClientes xs 
+    else do
+      file <- appendFile "clientes.txt" (show x) 
+      atualizaClientes xs 
+
+  
+     
 
 
 acessoGerente :: IO ()

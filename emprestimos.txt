@@ -1,0 +1,1 @@
+Emprestimo {nomeEmprestimo = "and", cpfEmprestimo = "1", totalParcelas = "10", dataDePagamento = "Primero dia util do m\234s", valorParcela = "\"24.0\"", juros = "\"1.4\"", valorTotal = "\"240.0\"", status = "Em andamento..."}
