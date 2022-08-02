@@ -24,7 +24,8 @@ import Prelude hiding (catch)
 data Gerente = Gerente
   { nomeGerente :: String,
     senhaGerente :: String,
-    telefoneGerente :: String
+    telefoneGerente :: String 
+    
   }
   deriving (Read, Show)
 
