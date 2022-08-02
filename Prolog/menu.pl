@@ -1,5 +1,5 @@
 :- include('./cliente.pl').
-:- include('./adm.pl').
+:- include('./gerente.pl').
 	                                                        
 
 main :- 
@@ -19,7 +19,7 @@ mostraMenu :-
 	printLine,
 
 	read_line_to_string(user_input, Option),
-	(Option == "1" -> tty_clear, login_adm -> tty_clear, menuGerente;
+	(Option == "1" -> tty_clear, login_gerente -> tty_clear, menuGerente;
 	Option == "2" -> tty_clear, menuCliente;
 	Option == "3" -> tty_clear, sair;
 	opcaoInvalida,
@@ -37,7 +37,7 @@ menuGerente :-
 	read_line_to_string(user_input, Option),
 	(Option == "1" -> tty_clear, listaClientes, tty_clear, menuGerente;
 	Option == "2" -> tty_clear, remove_cliente, menuGerente;
-	Option == "3" -> tty_clear, editar_contato_administrador, menuGerente;
+	Option == "3" -> tty_clear, editar_contato_gerente, menuGerente;
 	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	menuGerente).
@@ -51,7 +51,7 @@ menuCliente :-
 	read_line_to_string(user_input, Option),
 	(Option == "1" -> tty_clear, cadastraCliente, tty_clear, menuCliente;
 	Option == "2" -> (tty_clear, login_cliente(Cpf) -> tty_clear, segundoMenuCliente(Cpf) ; tty_clear, mostraMenu);
-	Option == "3" -> (tty_clear, exibir_contato_admin, tty_clear, menuCliente);
+	Option == "3" -> (tty_clear, exibir_contato_gerente, tty_clear, menuCliente);
 	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	menuCliente).
@@ -70,9 +70,9 @@ segundoMenuCliente(Cpf) :-
 	opcaoInvalida,
 	segundoMenuCliente(Cpf)).
 
-exibir_contato_admin:- nl,
-	consult('./data/bd_adm.pl'),
-	administrador("adm",_,Contato),
+exibir_contato_gerente:- nl,
+	consult('./data/bd_gerente.pl'),
+	gerente("123",_,Contato),
 	writeln(Contato),
 
 	writeln("pressione qualquer tecla para voltar ao menu"),

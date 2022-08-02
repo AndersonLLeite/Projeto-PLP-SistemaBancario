@@ -6,26 +6,26 @@ setup_bd_cliente :-
 	consult('./data/bd_clientes.pl').
 
 setup_bd_login :-
-	consult('./data/bd_adm.pl').
+	consult('./data/bd_gerente.pl').
 
 arquivo_vazio_adm :-
-	\+(predicate_property(administrador(_,_,_), dynamic)).
+	\+(predicate_property(gerente(_,_,_), dynamic)).
 
-loginAdm :-
+loginGerente :-
 	nl,
 	writeln("Faça acesso como gerente:"),
 	writeln("Insira seu CPF: "),
 	read_line_to_string(user_input, Cpf),
 	writeln("Insira sua senha: "),
 	read_line_to_string(user_input, Senha),
-	(administrador(Cpf, Senha, _) -> nl, writeln("Login realizado com sucesso!"), nl;
+	(gerente(Cpf, Senha, _) -> nl, writeln("Login realizado com sucesso!"), nl;
 	writeln("Senha incorreta."), nl, false).
 
-login_adm :-
+login_gerente :-
 	setup_bd_login,
-	arquivo_vazio_adm -> writeln("Administrador não cadastrado."), nl, false;
-	(administrador(_, _, _)) -> loginAdm;
-	writeln("Administrador não cadastrado."), nl, false.
+	arquivo_vazio_adm -> writeln("Gerente não cadastrado."), nl, false;
+	(gerente(_, _, _)) -> loginGerente;
+	writeln("Gerente não cadastrado."), nl, false.
 
 listaClientes :- 
 	setup_bd_cliente,
@@ -86,20 +86,20 @@ fimMetodoAdm:-
 	writeln("Clique em enter para continuar: "),
 	read_line_to_string(user_input, _).
 	
-editar_contato_administrador :-
+editar_contato_gerente :-
 	setup_bd_login,
-	writeln("Confirme o CPF do adm"),
+	writeln("Confirme o CPF do gerente"),
 	read_line_to_string(user_input, Cpf),
-	writeln("Confirme a senha do adm"),
+	writeln("Confirme a senha do gerente"),
 	read_line_to_string(user_input, Senha),
 
-	(administrador(Cpf, Senha, _) -> nl, 
+	(gerente(Cpf, Senha, _) -> nl, 
 		writeln("insira o número do contato a ser atualizado."),
 		read_line_to_string(user_input, Contato), nl, 
-		retract(administrador(Cpf, Senha, _)),
-		assert(administrador(Cpf,Senha,Contato)),	
+		retract(gerente(Cpf, Senha, _)),
+		assert(gerente(Cpf,Senha,Contato)),	
 		tell('./data/bd_adm.pl'), nl,
-		listing(administrador/3),
+		listing(gerente/3),
 		told, 
 		tty_clear,
 		writeln("Contato atualizado com sucesso."),
