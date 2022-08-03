@@ -23,7 +23,7 @@ cadastraCliente :-
 	nl, writeln("Insira seu telefone: "),
 	read_line_to_string(user_input, Telefone),
 	nl, writeln("Insira saldo inicial: "),
-	read_line_to_string(user_input, Saldo),
+	read(Saldo),
 	nl,
 	(get_cpf_clientes(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl;
 	assertz(cliente(Nome, Cpf, Senha, Telefone, Saldo)),
@@ -63,6 +63,45 @@ consultaConta(Cpf) :-
 	exibeSaldoCliente(ClienteSaldo),
 	told, nl, printLine.
 
+saque(Cpf) :-
+	setup_bd_cliente,
+	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteNome),
+	atomics_to_string(ClienteNome, NomeString),
+	bagof(Senha, cliente(_, Cpf, Senha, _, _), ClienteSenha),
+	atomics_to_string(ClienteSenha, SenhaString),
+	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
+	atomics_to_string(ClienteTelefone, TelefoneString),
+	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
+	writeln("Saldo atual: "),
+	exibeSaldoCliente(ClienteSaldo),
+	nl, writeln("Insira o valor do saque: "),
+	read(Valor),
+	(Valor > ClienteSaldo -> writeln("Saldo insuficiente."), fimMetodo;
+	SaldoNovo is ClienteSaldo - Valor,
+	remove_cliente_apos_operacao(Cpf),
+	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
+	adicionaCliente,
+	writeln("Saque realizado com sucesso!"), fimMetodo),
+	nl.
+
+deposito(Cpf) :-
+	setup_bd_cliente,
+	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteNome),
+	atomics_to_string(ClienteNome, NomeString),
+	bagof(Senha, cliente(_, Cpf, Senha, _, _), ClienteSenha),
+	atomics_to_string(ClienteSenha, SenhaString),
+	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
+	atomics_to_string(ClienteTelefone, TelefoneString),
+	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
+	writeln("Saldo atual: "),
+	exibeSaldoCliente(ClienteSaldo),
+	nl, writeln("Insira o valor do deposito: "),
+	read(Valor),
+	SaldoNovo is ClienteSaldo + Valor,
+	remove_cliente_apos_operacao(Cpf),
+	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
+	adicionaCliente,
+	writeln("Deposito realizado com sucesso!"), fimMetodo.
 
 fimMetodo:-
 	writeln("Clique em enter para continuar: "),
