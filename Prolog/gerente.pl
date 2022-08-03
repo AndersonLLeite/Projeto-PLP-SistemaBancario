@@ -8,6 +8,9 @@ setup_bd_cliente :-
 setup_bd_emprestimos :-
 	consult('./data/bd_emprestimos.pl').
 
+setup_bd_investimentos :-
+	consult('./data/bd_investimentos.pl').
+
 setup_bd_login :-
 	consult('./data/bd_gerente.pl').
 
@@ -68,6 +71,32 @@ exibeTelefoneCliente([Telefone]) :-
 exibeSaldoCliente([Saldo]) :-
 	write("Saldo: "),
 	writeln(Saldo).
+
+listaEmprestimos :-
+	setup_bd_emprestimos,
+	findall(E, emprestimo(_, _, _, _, _, _, E), ListaEmprestimos),
+	printLine,
+	writeln("Emprestimos cadastrados: "),
+	printLine,
+	exibeEmprestimos(ListaEmprestimos),
+	told, nl.
+
+exibeEmprestimos([]) :-
+	nl,
+	writeln("Nenhum emprestimo cadastrado.").
+
+exibeEmprestimos([H]) :-
+	write("- "),
+	writeln(H),
+	fimMetodoAdm.
+
+exibeEmprestimos([H|T]) :-
+	write("- "),
+	writeln(H),
+	exibeEmprestimos(T).
+
+
+
 
 add_clientes([]).
 add_clientes([[Nome,Cpf,Senha,Telefone, Saldo]|T]) :- 

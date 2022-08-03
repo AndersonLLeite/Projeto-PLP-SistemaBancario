@@ -18,6 +18,12 @@ adicionaEmprestimo :-
 	listing(emprestimo/7),
 	told.
 
+adicionaInvestimento :-
+	setup_bd_investimentos,
+	tell('./data/bd_investimentos.pl'), nl,
+	listing(investimento/7),
+	told.
+
 
 
 cadastraCliente :-
@@ -71,6 +77,7 @@ consultaConta(Cpf) :-
 	exibeSaldoCliente(ClienteSaldo),
 	told, nl, printLine.
 
+
 saque(Cpf) :-
 	setup_bd_cliente,
 	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteNome),
@@ -89,7 +96,6 @@ saque(Cpf) :-
 	remove_cliente_apos_operacao(Cpf),
 	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
 	adicionaCliente,
-
 	writeln("Saque realizado com sucesso!"), fimMetodo),
 	nl.
 
@@ -143,6 +149,47 @@ adicionar_emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Statu
 	assertz(emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status)),
 	adicionaEmprestimo.
 
+fazer_investimento(Cpf) :-
+	setup_bd_cliente,
+	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteNome),
+	atomics_to_string(ClienteNome, NomeString),
+	bagof(Senha, cliente(_, Cpf, Senha, _, _), ClienteSenha),
+	atomics_to_string(ClienteSenha, SenhaString),
+	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
+	atomics_to_string(ClienteTelefone, TelefoneString),
+	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
+	writeln("Saldo atual: "),
+	exibeSaldoCliente(ClienteSaldo),
+	nl, writeln("Insira o valor a ser investido: "),
+	read(Valor),
+	(Valor > ClienteSaldo -> writeln("Saldo insuficiente."), fimMetodo;
+	SaldoNovo is ClienteSaldo - Valor,
+	remove_cliente_apos_operacao(Cpf),
+	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
+	adicionaCliente,
+	writeln("Tipos de investimentos: "),
+	nl, writeln("1 - Poupança: -- 2,99% a.a."),
+	nl, writeln("2 - CDI: -- 3,95% a.a."),
+	nl, writeln("3 - Tesouro D.: -- 4,5% a.a."),
+	nl, writeln("4 - LCI: -- 4,39% a.a."),
+	nl, writeln("5 - LCA: -- 5,06% a.a."),
+	nl, writeln("Selecione o tipo de investimento: "),
+	read(Tipo),
+	(Tipo = 1 -> TipoString = "Poupança", Taxa = 0.0299, Rendimento = "2.99 % a.a.";
+	Tipo = 2 -> TipoString = "CDI", Taxa = 0.0395 , Rendimento = "3.95 % a.a.";
+	Tipo = 3 -> TipoString = "Tesouro D.", Taxa = 0.045 , Rendimento = "4.5 % a.a.";
+	Tipo = 4 -> TipoString = "LCI", Taxa = 0.0439 , Rendimento = "4.39 % a.a.";
+	Tipo = 5 -> TipoString = "LCA", Taxa = 0.0506 , Rendimento = "5.06 % a.a."),
+	ValorTotal is Valor + (Valor * Taxa),
+	Status = "Em andamento...",
+	adicionar_investimento(NomeString, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status),
+	writeln("Investimento realizado com sucesso!"), fimMetodo),
+	nl.
+
+adicionar_investimento(Nome, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status):-
+	setup_bd_investimentos,
+	assertz(investimento(Nome, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status)),
+	adicionaInvestimento.
 
 fimMetodo:-
 	writeln("Clique em enter para continuar: "),
