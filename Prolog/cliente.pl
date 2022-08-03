@@ -46,6 +46,19 @@ login_cliente(Cpf) :-
 	writeln("Cliente não cadastrado."), nl, false),
 	fimMetodo.
 
+consultaConta(Cpf) :-
+	setup_bd_cliente,
+	bagof(Nome, cliente(Nome, Cpf, _, _), ClienteName),
+	bagof(Cpf, cliente(_, Cpf, _, _), ClienteCpf),
+	bagof(Telefone, cliente(_, Cpf, _, Telefone), ClienteTelefone),
+	writeln("Dados da sua conta: "),
+	exibeNomeCliente(ClienteName),
+	exibeCpfCliente(ClienteCpf),
+	exibeTelefoneCliente(ClienteTelefone),
+	told, nl,
+	fimMetodo.
+
+
 fimMetodo:-
 	writeln("Clique em enter para continuar: "),
 	read_line_to_string(user_input, _).
