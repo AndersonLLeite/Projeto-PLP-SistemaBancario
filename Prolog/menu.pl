@@ -66,7 +66,8 @@ segundoMenuCliente(Cpf) :-
 	writeln("0 - Retornar para o menu principal"),
 	printLine,
 	read_line_to_string(user_input, Option),
-	(Option == "0" -> tty_clear, mostraMenu;
+	(Option == "1" -> tty_clear, consultaConta(Cpf), tty_clear, segundoMenuCliente(Cpf);
+	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	segundoMenuCliente(Cpf)).
 

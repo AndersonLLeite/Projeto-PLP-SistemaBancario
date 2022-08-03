@@ -52,6 +52,18 @@ exibeClientes([H|T]) :-
 	writeln(H),
 	exibeClientes(T).
 
+exibeNomeCliente([Nome]) :-
+	write("Nome: "),
+	writeln(Nome).
+
+exibeCpfCliente([Cpf]) :-
+	write("CPF: "),
+	writeln(Cpf).
+
+exibeTelefoneCliente([Telefone]) :-
+	write("Telefone: "),
+	writeln(Telefone).
+
 add_clientes([]).
 add_clientes([[Nome,Cpf,Senha,Telefone]|T]) :- 
 	add_cliente(Nome,Cpf,Senha,Telefone), add_clientes(T).
