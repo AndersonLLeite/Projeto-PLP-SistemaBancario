@@ -34,12 +34,7 @@ listaClientes :-
 	writeln("Clientes cadastrados: "),
 	printLine,
 	exibeClientes(ListaClientes),
-	told, nl,
-	fimListagemClientes.
-
-fimListagemClientes:-
-	writeln("Clique em enter para continuar: "),
-	read_line_to_string(user_input, _).
+	told, nl.
 
 exibeClientes([]) :-
 	nl,
@@ -47,7 +42,8 @@ exibeClientes([]) :-
 
 exibeClientes([H]) :-
 	write("- "),
-	consultaConta(H).
+	consultaConta(H),
+	fimMetodoAdm.
 
 exibeClientes([H|T]) :-
 	write("- "),
@@ -92,6 +88,15 @@ remove_cliente :-
     listing(cliente/5),
     told, nl,
     fimMetodoAdm.
+
+remove_cliente_apos_operacao(Cpf) :- 
+    list_clientes(C),
+    retractall(cliente(_,_,_,_,_)),
+    remove_cliente_aux(C, Cpf, C_att),
+    add_clientes(C_att),
+    tell('./data/bd_clientes.pl'), nl,
+    listing(cliente/5),
+    told, nl.
 
 remove_cliente_aux([],_,[]) :-
 	nl,
