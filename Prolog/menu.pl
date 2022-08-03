@@ -69,6 +69,7 @@ segundoMenuCliente(Cpf) :-
 	(Option == "1" -> tty_clear, consultaConta(Cpf), fimMetodo, tty_clear, segundoMenuCliente(Cpf);
 	Option == "2" -> tty_clear, saque(Cpf), tty_clear, segundoMenuCliente(Cpf);
 	Option == "3" -> tty_clear, deposito(Cpf), tty_clear, segundoMenuCliente(Cpf);
+	Option == "4" -> tty_clear, fazer_emprestimo(Cpf), tty_clear, segundoMenuCliente(Cpf);
 	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	segundoMenuCliente(Cpf)).

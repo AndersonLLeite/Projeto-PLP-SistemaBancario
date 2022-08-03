@@ -5,6 +5,9 @@
 setup_bd_cliente :-
 	consult('./data/bd_clientes.pl').
 
+setup_bd_emprestimos :-
+	consult('./data/bd_emprestimos.pl').
+
 setup_bd_login :-
 	consult('./data/bd_gerente.pl').
 

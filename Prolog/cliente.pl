@@ -1,6 +1,8 @@
 setup_bd :-
 	consult('./data/bd_clientes.pl').
 
+
+
 arquivo_vazio :-
 	\+(predicate_property(cliente(_,_,_,_,_), dynamic)).
 
@@ -8,6 +10,12 @@ adicionaCliente :-
 	setup_bd,
 	tell('./data/bd_clientes.pl'), nl,
 	listing(cliente/5),
+	told.
+
+adicionaEmprestimo :-
+	setup_bd_emprestimos,
+	tell('./data/bd_emprestimos.pl'), nl,
+	listing(emprestimo/7),
 	told.
 
 
@@ -81,6 +89,7 @@ saque(Cpf) :-
 	remove_cliente_apos_operacao(Cpf),
 	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
 	adicionaCliente,
+
 	writeln("Saque realizado com sucesso!"), fimMetodo),
 	nl.
 
@@ -102,6 +111,38 @@ deposito(Cpf) :-
 	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
 	adicionaCliente,
 	writeln("Deposito realizado com sucesso!"), fimMetodo.
+
+fazer_emprestimo(Cpf):-
+	setup_bd_cliente,
+	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteNome),
+	atomics_to_string(ClienteNome, NomeString),
+	bagof(Senha, cliente(_, Cpf, Senha, _, _), ClienteSenha),
+	atomics_to_string(ClienteSenha, SenhaString),
+	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
+	atomics_to_string(ClienteTelefone, TelefoneString),
+	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
+	writeln("Saldo atual: "),
+	exibeSaldoCliente(ClienteSaldo),
+	nl, writeln("Insira o valor do emprestimo: "),
+	read(Valor),
+	nl, writeln("Insira o numero de parcelas: "),
+	read(Parcelas),
+	Juros is 0.14,
+	ValorTotal is Valor + (Valor * Juros),
+	ValorParcela is ValorTotal / Parcelas,
+	Status = "Em andamento...",
+	SaldoNovo is ClienteSaldo + Valor,
+	remove_cliente_apos_operacao(Cpf),
+	assertz(cliente(NomeString, Cpf, SenhaString, TelefoneString, SaldoNovo)),
+	adicionaCliente,
+	adicionar_emprestimo(NomeString, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status),
+	writeln("Emprestimo realizado com sucesso!"), fimMetodo.
+
+adicionar_emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status):-
+	setup_bd_emprestimos,
+	assertz(emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status)),
+	adicionaEmprestimo.
+
 
 fimMetodo:-
 	writeln("Clique em enter para continuar: "),
