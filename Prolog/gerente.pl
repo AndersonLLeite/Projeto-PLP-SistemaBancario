@@ -29,8 +29,10 @@ login_gerente :-
 
 listaClientes :- 
 	setup_bd_cliente,
-	findall(N, cliente(N, _, _, _), ListaClientes),
-	writeln("Usuários cadastrados: "),
+	findall(C, cliente(_, C, _, _,_), ListaClientes),
+	printLine,
+	writeln("Clientes cadastrados: "),
+	printLine,
 	exibeClientes(ListaClientes),
 	told, nl,
 	fimListagemClientes.
@@ -45,11 +47,11 @@ exibeClientes([]) :-
 
 exibeClientes([H]) :-
 	write("- "),
-	writeln(H).
+	consultaConta(H).
 
 exibeClientes([H|T]) :-
 	write("- "),
-	writeln(H),
+	consultaConta(H),
 	exibeClientes(T).
 
 exibeNomeCliente([Nome]) :-
@@ -64,26 +66,30 @@ exibeTelefoneCliente([Telefone]) :-
 	write("Telefone: "),
 	writeln(Telefone).
 
-add_clientes([]).
-add_clientes([[Nome,Cpf,Senha,Telefone]|T]) :- 
-	add_cliente(Nome,Cpf,Senha,Telefone), add_clientes(T).
+exibeSaldoCliente([Saldo]) :-
+	write("Saldo: "),
+	writeln(Saldo).
 
-add_cliente(Nome,Cpf,Senha,Telefone) :- 
-	assertz(cliente(Nome,Cpf,Senha,Telefone)).
+add_clientes([]).
+add_clientes([[Nome,Cpf,Senha,Telefone, Saldo]|T]) :- 
+	add_cliente(Nome,Cpf,Senha,Telefone, Saldo), add_clientes(T).
+
+add_cliente(Nome,Cpf,Senha,Telefone, Saldo) :- 
+	assertz(cliente(Nome,Cpf,Senha,Telefone, Saldo)).
 
 list_clientes(C) :- 
-	findall([Nome,Cpf,Senha,Telefone], cliente(Nome,Cpf,Senha,Telefone), C).
+	findall([Nome,Cpf,Senha,Telefone, Saldo], cliente(Nome,Cpf,Senha,Telefone, Saldo), C).
 
 remove_cliente :- 
 	nl,
 	writeln("Insira o CPF da conta a ser excluida: "),
 	read_line_to_string(user_input, Cpf),
     list_clientes(C),
-    retractall(cliente(_,_,_,_)),
+    retractall(cliente(_,_,_,_,_)),
     remove_cliente_aux(C, Cpf, C_att),
     add_clientes(C_att),
     tell('./data/bd_clientes.pl'), nl,
-    listing(cliente/4),
+    listing(cliente/5),
     told, nl,
     fimMetodoAdm.
 

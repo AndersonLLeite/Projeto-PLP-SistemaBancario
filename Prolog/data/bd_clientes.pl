@@ -1,6 +1,5 @@
 
-:- dynamic cliente/4.
+:- dynamic cliente/5.
 
-cliente("anderson", "123", "123", "12322").
-cliente("a", "1234", "1234", "1234").
+cliente("le", "1234", "1234", "122222", "500").
 
