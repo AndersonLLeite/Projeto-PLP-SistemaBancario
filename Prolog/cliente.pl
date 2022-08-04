@@ -15,13 +15,13 @@ adicionaCliente :-
 adicionaEmprestimo :-
 	setup_bd_emprestimos,
 	tell('./data/bd_emprestimos.pl'), nl,
-	listing(emprestimo/7),
+	listing(emprestimo/8),
 	told.
 
 adicionaInvestimento :-
 	setup_bd_investimentos,
 	tell('./data/bd_investimentos.pl'), nl,
-	listing(investimento/7),
+	listing(investimento/8),
 	told.
 
 
@@ -39,10 +39,10 @@ cadastraCliente :-
 	nl, writeln("Insira saldo inicial: "),
 	read(Saldo),
 	nl,
-	(get_cpf_clientes(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl;
+	(get_cpf_clientes(Cpfs), member(Cpf, Cpfs) -> nl, writeln("Cpf já cadastrado."), nl, fimMetodo;
 	assertz(cliente(Nome, Cpf, Senha, Telefone, Saldo)),
 	adicionaCliente,
-	writeln("Cliente cadastrado com sucesso!"),nl),
+	writeln("Cliente cadastrado com sucesso!"),nl, fimMetodo),
 	fimMetodo.
 
 get_cpf_clientes(Cpfs) :- 
@@ -55,7 +55,7 @@ loginCliente(Cpf) :-
 	writeln("Insira sua senha: "),
 	read_line_to_string(user_input, Senha),
 	(cliente(_, Cpf, Senha, _,_) -> nl, writeln("Login realizado com sucesso!"), nl;
-	writeln("Senha incorreta."), nl, false).
+	writeln("Senha incorreta."), nl, fimMetodo, menuCliente).
 
 login_cliente(Cpf) :-
 	setup_bd,
@@ -67,14 +67,22 @@ login_cliente(Cpf) :-
 consultaConta(Cpf) :-
 	setup_bd_cliente,
 	bagof(Nome, cliente(Nome, Cpf, _, _, _), ClienteName),
+	atomics_to_string(ClienteName, NomeString),
 	bagof(Cpf, cliente(_, Cpf, _, _, _), ClienteCpf),
+	atomics_to_string(ClienteCpf, CpfString),
 	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
+	atomics_to_string(ClienteTelefone, TelefoneString),
 	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
+	atomics_to_string(ClienteSaldo, SaldoString),
 	writeln("Dados da conta: "),
-	exibeNomeCliente(ClienteName),
-	exibeCpfCliente(ClienteCpf),
-	exibeTelefoneCliente(ClienteTelefone),
-	exibeSaldoCliente(ClienteSaldo),
+	write("Nome: "),
+	writeln(NomeString),
+	write("Cpf: "),
+	writeln(CpfString),
+	write("Telefone: "),
+	writeln(TelefoneString),
+	write("Saldo: "),
+	writeln(SaldoString),
 	told, nl, printLine.
 
 
@@ -87,8 +95,9 @@ saque(Cpf) :-
 	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
 	atomics_to_string(ClienteTelefone, TelefoneString),
 	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
-	writeln("Saldo atual: "),
-	exibeSaldoCliente(ClienteSaldo),
+	atomics_to_string(ClienteSaldo, SaldoString),
+	write("Saldo atual: "),
+	writeln(SaldoString),
 	nl, writeln("Insira o valor do saque: "),
 	read(Valor),
 	(Valor > ClienteSaldo -> writeln("Saldo insuficiente."), fimMetodo;
@@ -108,8 +117,9 @@ deposito(Cpf) :-
 	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
 	atomics_to_string(ClienteTelefone, TelefoneString),
 	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
-	writeln("Saldo atual: "),
-	exibeSaldoCliente(ClienteSaldo),
+	atomics_to_string(ClienteSaldo, SaldoString),
+	write("Saldo atual: "),
+	writeln(SaldoString),
 	nl, writeln("Insira o valor do deposito: "),
 	read(Valor),
 	SaldoNovo is ClienteSaldo + Valor,
@@ -127,8 +137,9 @@ fazer_emprestimo(Cpf):-
 	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
 	atomics_to_string(ClienteTelefone, TelefoneString),
 	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
-	writeln("Saldo atual: "),
-	exibeSaldoCliente(ClienteSaldo),
+	atomics_to_string(ClienteSaldo, SaldoString),
+	write("Saldo atual: "),
+	writeln(SaldoString),
 	nl, writeln("Insira o valor do emprestimo: "),
 	read(Valor),
 	nl, writeln("Insira o numero de parcelas: "),
@@ -146,8 +157,12 @@ fazer_emprestimo(Cpf):-
 
 adicionar_emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status):-
 	setup_bd_emprestimos,
-	assertz(emprestimo(Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status)),
+	findall(Id, emprestimo(Id,_,_,_,_,_,_,_), Emprestimos),
+	length(Emprestimos, NumeroEmprestimos),	
+	IdEmprestimo is NumeroEmprestimos + 1,
+	assertz(emprestimo(IdEmprestimo, Nome, Cpf, Parcelas, ValorParcela, Juros, ValorTotal, Status)),
 	adicionaEmprestimo.
+
 
 fazer_investimento(Cpf) :-
 	setup_bd_cliente,
@@ -158,8 +173,9 @@ fazer_investimento(Cpf) :-
 	bagof(Telefone, cliente(_, Cpf, _, Telefone, _), ClienteTelefone),
 	atomics_to_string(ClienteTelefone, TelefoneString),
 	bagof(Saldo, cliente(_, Cpf, _, _, Saldo), ClienteSaldo),
-	writeln("Saldo atual: "),
-	exibeSaldoCliente(ClienteSaldo),
+	atomics_to_string(ClienteSaldo, SaldoString),
+	write("Saldo atual: "),
+	writeln(SaldoString),
 	nl, writeln("Insira o valor a ser investido: "),
 	read(Valor),
 	(Valor > ClienteSaldo -> writeln("Saldo insuficiente."), fimMetodo;
@@ -188,7 +204,10 @@ fazer_investimento(Cpf) :-
 
 adicionar_investimento(Nome, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status):-
 	setup_bd_investimentos,
-	assertz(investimento(Nome, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status)),
+	findall(Id, investimento(Id,_,_,_,_,_,_,_), Investimentos),
+	length(Investimentos, NumeroInvestimentos),
+	IdInvestimento is NumeroInvestimentos + 1,
+	assertz(investimento(IdInvestimento, Nome, Cpf, TipoString, Valor, Rendimento, ValorTotal, Status)),
 	adicionaInvestimento.
 
 fimMetodo:-

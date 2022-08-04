@@ -39,6 +39,7 @@ menuGerente :-
 	Option == "2" -> tty_clear, remove_cliente, menuGerente;
 	Option == "3" -> tty_clear, editar_contato_gerente, menuGerente;
 	Option == "4" -> tty_clear, listaEmprestimos, tty_clear, menuGerente;
+	Option == "5" -> tty_clear, listaInvestimentos, tty_clear, menuGerente;
 	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	menuGerente).
@@ -68,10 +69,10 @@ segundoMenuCliente(Cpf) :-
 	printLine,
 	read_line_to_string(user_input, Option),
 	(Option == "1" -> tty_clear, consultaConta(Cpf), fimMetodo, tty_clear, segundoMenuCliente(Cpf);
-	Option == "2" -> tty_clear, saque(Cpf), tty_clear, segundoMenuCliente(Cpf);
-	Option == "3" -> tty_clear, deposito(Cpf), tty_clear, segundoMenuCliente(Cpf);
-	Option == "4" -> tty_clear, fazer_emprestimo(Cpf), tty_clear, segundoMenuCliente(Cpf);
-	Option == "5" -> tty_clear, fazer_investimento(Cpf), tty_clear, segundoMenuCliente(Cpf);
+	Option == "2" -> tty_clear, saque(Cpf),fimMetodo, tty_clear, segundoMenuCliente(Cpf);
+	Option == "3" -> tty_clear, deposito(Cpf),fimMetodo, tty_clear, segundoMenuCliente(Cpf);
+	Option == "4" -> tty_clear, fazer_emprestimo(Cpf),fimMetodo, tty_clear, segundoMenuCliente(Cpf);
+	Option == "5" -> tty_clear, fazer_investimento(Cpf),fimMetodo, tty_clear, segundoMenuCliente(Cpf);
 	Option == "0" -> tty_clear, mostraMenu;
 	opcaoInvalida,
 	segundoMenuCliente(Cpf)).
