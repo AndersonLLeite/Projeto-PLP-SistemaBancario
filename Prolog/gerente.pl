@@ -5,6 +5,12 @@
 setup_bd_cliente :-
 	consult('./data/bd_clientes.pl').
 
+setup_bd_emprestimos :-
+	consult('./data/bd_emprestimos.pl').
+
+setup_bd_investimentos :-
+	consult('./data/bd_investimentos.pl').
+
 setup_bd_login :-
 	consult('./data/bd_gerente.pl').
 
@@ -13,13 +19,12 @@ arquivo_vazio_adm :-
 
 loginGerente :-
 	nl,
-	writeln("Faça acesso como gerente:"),
-	writeln("Insira seu CPF: "),
+	writeln("Insira seu Cpf: "),
 	read_line_to_string(user_input, Cpf),
 	writeln("Insira sua senha: "),
 	read_line_to_string(user_input, Senha),
 	(gerente(Cpf, Senha, _) -> nl, writeln("Login realizado com sucesso!"), nl;
-	writeln("Senha incorreta."), nl, false).
+	writeln("Senha incorreta."), nl, fimMetodo, mostraMenu).
 
 login_gerente :-
 	setup_bd_login,
@@ -50,21 +55,120 @@ exibeClientes([H|T]) :-
 	consultaConta(H),
 	exibeClientes(T).
 
-exibeNomeCliente([Nome]) :-
+
+listaEmprestimos :-
+	setup_bd_emprestimos,
+	findall(Id, emprestimo(Id,_, _, _, _, _, _, _), ListaEmprestimos),
+	printLine,
+	writeln("Emprestimos cadastrados: "),
+	printLine,
+	exibeEmprestimos(ListaEmprestimos),
+	told, nl.
+
+exibeEmprestimos([]) :-
+	nl,
+	writeln("Nenhum emprestimo cadastrado.").
+
+exibeEmprestimos([H]) :-
+	consultaEmprestimo(H),
+	fimMetodoAdm.
+
+exibeEmprestimos([H|T]) :-
+	consultaEmprestimo(H),
+	exibeEmprestimos(T).
+
+consultaEmprestimo(Id) :-
+	setup_bd_emprestimos,
+	bagof(Id, emprestimo(Id,_,_,_,_,_,_,_), EmprestimoId),
+	atomics_to_string(EmprestimoId, IdString),
+	bagof(Nome, emprestimo(Id,Nome,_,_,_,_,_,_), EmprestimoNome),
+	atomics_to_string(EmprestimoNome, NomeString),
+	bagof(Cpf, emprestimo(Id,_,Cpf,_,_,_,_,_), EmprestimoCpf),
+	atomics_to_string(EmprestimoCpf, CpfString),
+	bagof(Parcelas, emprestimo(Id,_,_,Parcelas,_,_,_,_), EmprestimoParcelas),
+	atomics_to_string(EmprestimoParcelas, ParcelasString),
+	bagof(ValorParcela, emprestimo(Id,_,_,_,ValorParcela,_,_,_), EmprestimoValorPArcela),
+	atomics_to_string(EmprestimoValorPArcela, ValorParcelaString),
+	bagof(Juros, emprestimo(Id,_,_,_,_,Juros,_,_), EmprestimoJuros),
+	atomics_to_string(EmprestimoJuros, JurosString),
+	bagof(ValorTotal, emprestimo(Id,_,_,_,_,_,ValorTotal,_), EmprestimoValorTotal),
+	atomics_to_string(EmprestimoValorTotal, ValorTotalString),
+	bagof(Status, emprestimo(Id,_,_,_,_,_,_,Status), EmprestimoStatus),
+	atomics_to_string(EmprestimoStatus, StatusString),
+	write("Id: "),
+	writeln(IdString),
 	write("Nome: "),
-	writeln(Nome).
-
-exibeCpfCliente([Cpf]) :-
+	writeln(NomeString),
 	write("CPF: "),
-	writeln(Cpf).
+	writeln(CpfString),
+	write("Parcelas: "),
+	writeln(ParcelasString),
+	write("Valor da parcela: "),
+	writeln(ValorParcelaString),
+	write("Juros: "),
+	writeln(JurosString),
+	write("Valor total: "),
+	writeln(ValorTotalString),
+	write("Status: "),
+	writeln(StatusString),
+	printLine.
 
-exibeTelefoneCliente([Telefone]) :-
-	write("Telefone: "),
-	writeln(Telefone).
+listaInvestimentos :-
+	setup_bd_investimentos,
+	findall(Id, investimento(Id,_, _, _, _, _, _, _), ListaInvestimentos),
+	printLine,
+	writeln("Investimentos cadastrados: "),
+	printLine,
+	exibeInvestimentos(ListaInvestimentos),
+	told, nl.
 
-exibeSaldoCliente([Saldo]) :-
-	write("Saldo: "),
-	writeln(Saldo).
+exibeInvestimentos([]) :-
+	nl,
+	writeln("Nenhum investimento cadastrado.").
+
+exibeInvestimentos([H]) :-
+	consultaInvestimento(H),
+	fimMetodoAdm.
+
+exibeInvestimentos([H|T]) :-
+	consultaInvestimento(H),
+	exibeInvestimentos(T).
+
+consultaInvestimento(Id) :-
+	setup_bd_investimentos,
+	bagof(Id, investimento(Id,_,_,_,_,_,_,_), InvestimentoId),
+	atomics_to_string(InvestimentoId, IdString),
+	bagof(Nome, investimento(Id,Nome,_,_,_,_,_,_), InvestimentoNome),
+	atomics_to_string(InvestimentoNome, NomeString),
+	bagof(Cpf, investimento(Id,_,Cpf,_,_,_,_,_), InvestimentoCpf),
+	atomics_to_string(InvestimentoCpf, CpfString),
+	bagof(Tipo, investimento(Id,_,_,Tipo,_,_,_,_), InvestimentoTipo),
+	atomics_to_string(InvestimentoTipo, TipoString),
+	bagof(Valor, investimento(Id,_,_,_,Valor,_,_,_), InvestimentoValor),
+	atomics_to_string(InvestimentoValor, ValorString),
+	bagof(Rendimento, investimento(Id,_,_,_,_,Rendimento,_,_), InvestimentoRendimento),
+	atomics_to_string(InvestimentoRendimento, RendimentoString),
+	bagof(ValorTotal, investimento(Id,_,_,_,_,_,ValorTotal,_), InvestimentoValorTotal),
+	atomics_to_string(InvestimentoValorTotal, ValorTotalString),
+	bagof(Status, investimento(Id,_,_,_,_,_,_,Status), InvestimentoStatus),
+	atomics_to_string(InvestimentoStatus, StatusString),
+	write("Id: "),
+	writeln(IdString),
+	write("Nome: "),
+	writeln(NomeString),
+	write("CPF: "),
+	writeln(CpfString),
+	write("Tipo: "),
+	writeln(TipoString),
+	write("Valor: "),
+	writeln(ValorString),
+	write("Rendimento: "),
+	writeln(RendimentoString),
+	write("Valor total: "),
+	writeln(ValorTotalString),
+	write("Status: "),
+	writeln(StatusString),
+	printLine.
 
 add_clientes([]).
 add_clientes([[Nome,Cpf,Senha,Telefone, Saldo]|T]) :- 
